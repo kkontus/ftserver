@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package proto;
+
+// Questipns
+message LoadQuestionsList {
+    int32 network = 1;
+    int32 file = 2;
+    int32 db = 3;
+}
+
+message ReturnQuestionsList {
+    repeated Questions result = 1;
+}
+
+message Questions {
+    string Question = 2;
+    string Correct = 3;
+    repeated string Answers = 4;
+}
+
+// Answers
+message SendUserAnswers {
+    repeated string answers = 1;
+    string user = 2;
+}
+
+message UserResults {
+    repeated string result = 1;
+    repeated string answers = 2;
+    string percentage = 3;
+}
+
+// Rankings
+message LoadUserRanking {
+    string user = 1;
+}
+
+message ReturnUserRanking {
+    string score = 1;
+    string scoreOverall = 2;
+}
+
+service QuestionsService {
+    rpc GetAllQuestions (LoadQuestionsList) returns (ReturnQuestionsList);
+    rpc CheckUserAnswers (SendUserAnswers) returns (UserResults);
+    rpc CheckUserRanking (LoadUserRanking) returns (ReturnUserRanking);
+}

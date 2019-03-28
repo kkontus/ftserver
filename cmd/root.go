@@ -45,7 +45,7 @@ func Execute() {
 	}
 }
 
-type AddServiceServer struct{}
+//type AddServiceServer struct{}
 type QuestionsServiceServer struct{}
 
 func initGRPC() {
@@ -59,7 +59,7 @@ func initGRPC() {
 	//srv := grpc.NewServer()
 	srv = grpc.NewServer()
 	cproto.RegisterQuestionsServiceServer(srv, &QuestionsServiceServer{})
-	cproto.RegisterAddServiceServer(srv, &AddServiceServer{})
+	//cproto.RegisterAddServiceServer(srv, &AddServiceServer{})
 	reflection.Register(srv)
 
 	if err = srv.Serve(listener); err != nil {

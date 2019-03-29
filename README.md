@@ -34,3 +34,7 @@ or
 
 $ ftclient ranking
 ```
+
+TODO
+Loading questions from db
+Tests for util functions

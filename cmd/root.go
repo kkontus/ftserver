@@ -16,12 +16,12 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"github.com/spf13/cobra"
-	"net"
-	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc"
 	cproto "ftserver/proto"
+	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"net"
+	"os"
 )
 
 var srv *grpc.Server

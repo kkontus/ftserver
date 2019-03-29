@@ -15,36 +15,53 @@
 package cmd
 
 import (
-	"fmt"
-	"github.com/spf13/cobra"
-	"time"
-	"encoding/json"
-	"net/http"
 	"context"
+	"encoding/json"
+	"fmt"
 	cproto "ftserver/proto"
+	cutil "ftserver/util"
+	"github.com/spf13/cobra"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"time"
+)
+
+// don't change this, it's just so that we don't have string flags on multiple places
+const (
+	URL      = "url"
+	FILEPATH = "filepath"
+	MODE     = "mode"
 )
 
 const (
-	URL = "url" // don't change this, it's just so that we don't have string flags on multiple places
-)
-
-const (
-	NETWORK = iota
-	FILE
-	DB
+	NETWORK = "network"
+	FILE    = "file"
+	DB      = "db"
 )
 
 var url string
+var filePath string
+var mode string
 var questionsAndAnswers []Questions
 var rankings map[string]UserRanking
 
 // questionsCmd represents the questions command
 var questionsCmd = &cobra.Command{
-	Use:   "questions",
-	Short: "Gets list of all questions",
-	Long:  `Gets the list of all available questions.`,
+	Use:       "questions",
+	Short:     "Gets list of all questions",
+	Long:      `Gets the list of all available questions from different repositories (network, file, db).`,
+	ValidArgs: []string{MODE, URL, FILEPATH},
 	Run: func(cmd *cobra.Command, args []string) {
+		mode = cmd.Flag(MODE).Value.String()
 		url = cmd.Flag(URL).Value.String()
+		filePath = cmd.Flag(FILEPATH).Value.String()
+
+		optionsForMode := []string{NETWORK, FILE, DB}
+		if !cutil.Contains(mode, optionsForMode) {
+			fmt.Println("Mode flag only allows following flags: network, file, db")
+			os.Exit(1)
+		}
 
 		rankings = make(map[string]UserRanking)
 
@@ -56,8 +73,13 @@ func init() {
 	rootCmd.AddCommand(questionsCmd)
 
 	defaultUrl := "https://gist.githubusercontent.com/kkontus/323b05ed729e53c7dd5307bf6231693a/raw/2ca073e5dbfd10a7ded4883a565584db71aff85c/questions"
-	url = defaultUrl // this will be overwritten if -u flag is used
-	questionsCmd.PersistentFlags().StringP(URL, "u", defaultUrl, "Url for the quiz questions")
+	defaultFile := "questions.json"
+	url = defaultUrl       // this will be overwritten if -u flag is used
+	filePath = defaultFile // this will be overwritten if -f flag is used
+	questionsCmd.Flags().StringP(URL, "u", defaultUrl, "Url for the network quiz questions")
+	questionsCmd.Flags().StringP(FILEPATH, "f", defaultFile, "File for the local quiz questions")
+	questionsCmd.Flags().StringP(MODE, "m", NETWORK, "Mode for the quiz questions (network, file, db)")
+	questionsCmd.MarkFlagRequired(MODE)
 }
 
 //type QuestionsServiceServer struct{}
@@ -99,35 +121,55 @@ func createClient() *http.Client {
 
 func (s *QuestionsServiceServer) GetAllQuestions(ctx context.Context, request *cproto.LoadQuestionsList) (*cproto.ReturnQuestionsList, error) {
 	result := []*cproto.Questions{}
+	questions := []Questions{}
 
 	// in case we need different options for different things
-	if request.Network == NETWORK {
+	if mode == NETWORK {
 		client := createClient()
 		resp, err := client.Get(url)
 		if err != nil {
 			panic(err)
 		}
+
 		defer resp.Body.Close()
 
-		questions := []Questions{}
 		err = json.NewDecoder(resp.Body).Decode(&questions)
 		if err != nil {
 			panic(err)
 		}
-
-		questionsAndAnswers = questions // we will set that in a var so that we can use it to check the user answers
-		for _, elem := range questions {
-			q := cproto.Questions{
-				Question: elem.Question,
-				Correct:  elem.Correct,
-				Answers:  elem.Answers,
-			}
-			result = append(result, &q)
+	} else if mode == FILE {
+		file, err := os.Open(filePath)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
-	} else if request.File == FILE {
 
-	} else if request.Db == DB {
+		defer file.Close()
 
+		byteValue, err := ioutil.ReadAll(file)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		err = json.Unmarshal(byteValue, &questions)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	} else if mode == DB {
+		fmt.Println("Database quiz not implemented yet")
+		os.Exit(1)
+	}
+
+	questionsAndAnswers = questions // we will set that in a var so that we can use it to check the user answers
+	for _, elem := range questions {
+		q := cproto.Questions{
+			Question: elem.Question,
+			Correct:  elem.Correct,
+			Answers:  elem.Answers,
+		}
+		result = append(result, &q)
 	}
 
 	return &cproto.ReturnQuestionsList{Result: result}, nil

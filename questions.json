@@ -1,0 +1,25 @@
+[{
+  "question": "Which one is correct team name in NBA?",
+  "correct": "Huston Rocket",
+  "answers": ["New York Bulls",
+    "Los Angeles Kings",
+    "Golden State Warriros",
+    "Huston Rocket"
+  ]
+}, {
+  "question": "5 + 7 = ?",
+  "correct": "12",
+  "answers": ["10",
+    "11",
+    "12",
+    "13"
+  ]
+}, {
+  "question": "12 - 8 = ?",
+  "correct": "4",
+  "answers": ["1",
+    "2",
+    "3",
+    "4"
+  ]
+}]

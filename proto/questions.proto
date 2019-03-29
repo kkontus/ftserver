@@ -4,9 +4,9 @@ package proto;
 
 // Questipns
 message LoadQuestionsList {
-    int32 network = 1;
-    int32 file = 2;
-    int32 db = 3;
+//    string network = 1;
+//    string file = 2;
+//    string db = 3;
 }
 
 message ReturnQuestionsList {

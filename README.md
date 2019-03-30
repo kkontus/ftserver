@@ -34,6 +34,11 @@ ftserver questions --mode network -u <url>
 ftserver questions --mode file -f <fullpath>
 ftserver questions --mode db
 ```
+Note for **_--mode db_**
+
+_for this to work **mysql has to be installed and questions.sql imported**_
+
+_this was tested on Docker container with following config https://github.com/kkontus/GoBittrexDockerConfig_
 
 
 Run: 
@@ -48,9 +53,6 @@ $ ftserver questions --mode network -u https://gist.githubusercontent.com/kkontu
 $ ftserver questions --mode file -f /full/path/to/project/src/quiz/ftserver/questions.json 
 $ ftserver questions --mode file -f /Users/<user>/GolangProjects/src/ftserver/questions.json 
 
-// for this to work mysql has to be installed and questions.sql imported
-// this was tested on Docker container with following config
-// https://github.com/kkontus/GoBittrexDockerConfig
 $ ftserver questions --mode db
 
 Run client:

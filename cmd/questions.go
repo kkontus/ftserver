@@ -20,11 +20,14 @@ import (
 	"fmt"
 	cproto "ftserver/proto"
 	cutil "ftserver/util"
+	cdb "ftserver/databases"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
+	. "ftserver/entity" // using dot is not a best practice, I only use it on entity/struct that are reused for cleaner code,
+	// but in general everything else should use qualifiers
 )
 
 // don't change this, it's just so that we don't have string flags on multiple places
@@ -101,18 +104,6 @@ func init() {
 //	}
 //}
 
-type UserRanking struct {
-	Name           string
-	Percentage     string
-	CorrectAnswers float64
-}
-
-type Questions struct {
-	Question string   `json:"question"`
-	Correct  string   `json:"correct"`
-	Answers  []string `json:"answers"`
-}
-
 func createClient() *http.Client {
 	return &http.Client{
 		Timeout: time.Second * 5, // Maximum of 5 secs
@@ -158,8 +149,13 @@ func (s *QuestionsServiceServer) GetAllQuestions(ctx context.Context, request *c
 			os.Exit(1)
 		}
 	} else if mode == DB {
-		fmt.Println("Database quiz not implemented yet")
-		os.Exit(1)
+		db, err := cdb.Connect(cdb.MYSQL_HOST, cdb.MYSQL_PORT, cdb.MYSQL_USERNAME, cdb.MYSQL_PASSWORD, cdb.MYSQL_DBNAME)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		questions = cdb.FindAll(db, err)
 	}
 
 	questionsAndAnswers = questions // we will set that in a var so that we can use it to check the user answers
